@@ -8,6 +8,8 @@
 
 No account. No server. No app store. One HTML file.
 
+![Visual](screenshot.jpg)
+
 ## Why
 
 Tools like [Azimutis](https://play.google.com/store/apps/details?id=com.azimutis) are great but limit free measurements. Other options require dedicated hardware or desktop software.
