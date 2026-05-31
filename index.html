@@ -248,6 +248,27 @@
     color: rgba(255,255,255,0.6);
     max-width: 280px;
   }
+  #splash-logo {
+    width: 90px; height: 90px;
+    object-fit: contain;
+    border-radius: 18px;
+    box-shadow: 0 0 32px rgba(255,184,0,0.25);
+  }
+  #splash-version {
+    font: 300 11px/1 var(--mono);
+    color: rgba(255,184,0,0.45);
+    letter-spacing: 0.12em;
+  }
+  #splash-credit {
+    font: 300 11px/1.5 var(--sans);
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    max-width: 240px;
+  }
+  #splash-credit a {
+    color: rgba(255,184,0,0.5);
+    text-decoration: none;
+  }
   #btn-start {
     padding: 14px 36px;
     background: var(--cyan);
@@ -394,9 +415,19 @@
 
 <!-- Permission screen -->
 <div id="perm-screen">
+  <img id="splash-logo" src="logo.png" alt="Solar Mask Generator logo"
+       onerror="this.style.display='none'">
   <h1>Solar Mask Generator</h1>
+  <div id="splash-version">v1.0.0</div>
   <p>Relevé de masque solaire — Accès à la caméra et au gyroscope requis.</p>
   <button id="btn-start">Démarrer</button>
+  <div id="splash-credit">
+    Développé par Daniel Moindrot<br>
+    <a href="https://github.com/38decibel/Solar-Mask-Generator" target="_blank">
+      github.com/38decibel
+    </a><br>
+    MIT License
+  </div>
 </div>
 
 <!-- Points modal -->
