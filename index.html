@@ -595,9 +595,7 @@ function renderModal() {
 // ── Start ────────────────────────────────────────────────────────────────────
 document.getElementById('btn-start').addEventListener('click', async () => {
   permScreen.style.display = 'none';
-  await startCamera();
 
-  // iOS 13+: requestPermission MUST be called synchronously inside a user gesture handler
   if (typeof DeviceOrientationEvent !== 'undefined' &&
       typeof DeviceOrientationEvent.requestPermission === 'function') {
     try {
@@ -605,16 +603,17 @@ document.getElementById('btn-start').addEventListener('click', async () => {
       if (state === 'granted') {
         attachOrientationHandler();
       } else {
-        alert("Permission gyroscope refusée. L'azimut et l'élévation ne seront pas disponibles.");
+        alert("Permission gyroscope refusée.");
       }
     } catch(err) {
       console.warn('DeviceOrientation permission error:', err);
-      attachOrientationHandler(); // try anyway
+      attachOrientationHandler();
     }
   } else {
-    // Android / desktop — no permission needed
     attachOrientationHandler();
   }
+
+  await startCamera();
 
   updateHUD();
   updateBar();
