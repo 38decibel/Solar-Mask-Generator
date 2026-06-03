@@ -418,7 +418,7 @@
   <img id="splash-logo" src="logo.png" alt="Solar Mask Generator logo"
        onerror="this.style.display='none'">
   <h1>Solar Mask Generator</h1>
-  <div id="splash-version">v1.1.0</div>
+  <div id="splash-version">v1.2.0</div>
   <p>Relevé de masque solaire — Accès à la caméra et au gyroscope requis.</p>
   <button id="btn-start">Démarrer</button>
   <div id="splash-credit">
@@ -451,7 +451,12 @@ let azimuth   = 0;
 let elevation = 0;
 let points    = [];   // [{az, el}]
 let sensorActive = false;
-
+// ── Low-pass filter state ────────────────────────────────────────────────────
+const ALPHA_AZ  = 0.08;  // azimuth smoothing  (lower = smoother, slower)
+const ALPHA_EL  = 0.12;  // elevation smoothing
+let _sinAz = 0, _cosAz = 1;  // running sin/cos for circular mean
+let _elSmooth = 0;
+let _filterInit = false;
 // ── DOM refs ────────────────────────────────────────────────────────────────
 const video       = document.getElementById('video');
 const azVal       = document.getElementById('az-val');
@@ -501,14 +506,42 @@ async function startCamera() {
 
 // ── Sensors ─────────────────────────────────────────────────────────────────
 function handleOrientation(e) {
+  let rawAz = null;
   if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
-    azimuth = e.webkitCompassHeading;
+    rawAz = e.webkitCompassHeading;
   } else if (e.alpha !== null) {
-    azimuth = (360 - e.alpha) % 360;
+    rawAz = (360 - e.alpha) % 360;
   }
-  if (e.beta !== null) {
-    elevation = e.beta - 90;
+
+  let rawEl = null;
+  if (e.beta !== null) rawEl = e.beta - 90;
+
+  if (rawAz === null && rawEl === null) return;
+
+  if (!_filterInit) {
+    // First sample — initialise filter with raw values
+    if (rawAz !== null) {
+      _sinAz = Math.sin(rawAz * Math.PI / 180);
+      _cosAz = Math.cos(rawAz * Math.PI / 180);
+    }
+    if (rawEl !== null) _elSmooth = rawEl;
+    _filterInit = true;
   }
+
+  // Circular low-pass filter for azimuth (handles 359°→1° wraparound)
+  if (rawAz !== null) {
+    const rad = rawAz * Math.PI / 180;
+    _sinAz = ALPHA_AZ * Math.sin(rad) + (1 - ALPHA_AZ) * _sinAz;
+    _cosAz = ALPHA_AZ * Math.cos(rad) + (1 - ALPHA_AZ) * _cosAz;
+    azimuth = (Math.atan2(_sinAz, _cosAz) * 180 / Math.PI + 360) % 360;
+  }
+
+  // Standard low-pass filter for elevation
+  if (rawEl !== null) {
+    _elSmooth = ALPHA_EL * rawEl + (1 - ALPHA_EL) * _elSmooth;
+    elevation = _elSmooth;
+  }
+
   updateHUD();
   sensorActive = true;
 }
